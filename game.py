@@ -12,6 +12,7 @@ SETTINGS = {
     "player_initial_pos_y": 650,
     "player_color": "red",
     "player_velocity": 50,
+    "player_lives": 3,
     "rock_height": 50,
     "rock_width": 50,
     "rock_velocity": 5,
@@ -30,6 +31,8 @@ class Board(Canvas):
 
         # TODO: Create settings for the player rect
         # TODO: Export into a method
+        self.score     = 0
+        self.lives     = SETTINGS["player_lives"]
         player_height  = SETTINGS["player_height"]
         player_width   = SETTINGS["player_width"]
         player_x_start = SETTINGS["player_initial_pos_x"]
@@ -42,6 +45,12 @@ class Board(Canvas):
 
         # TODO: Don't bind all keys
         self.bind_all("<Key>", self.on_keypress)
+
+        # Info Screen
+        self.create_text(30, 30, text="Score: {0}".format(self.lives),
+                         tag="score", fill="white")
+        self.create_text(30, 10, text="Lives: {0}".format(self.score),
+                         tag="lives", fill="white")
 
         # Periodical actions
         self.after(SETTINGS["game_delay"], self.on_tick)
@@ -79,7 +88,14 @@ class Board(Canvas):
         #   - Spawn rocks
         #   - Move rocks down
         self.check_for_collisions()
+        self.update_info()
         self.after(SETTINGS["game_delay"], self.on_tick)
+
+    def update_info(self):
+        lives = self.find_withtag("lives")
+        score = self.find_withtag("score")
+        self.itemconfigure(lives, text="Lives: {0}".format(self.lives))
+        self.itemconfigure(score, text="Score: {0}".format(self.score))
 
     def spawn_rock(self):
         rock_height  = SETTINGS["rock_height"]
@@ -118,8 +134,13 @@ class Board(Canvas):
             ovr_tags = self.gettags(ovr)
             if "rock" in ovr_tags:
                 # TODO: Dwayne Johnson assaulted Milko! Call 112
-                print("You hit a rock!")
-                
+                self.delete(ovr)
+                self.lives -= 1
+
+                if self.lives <= 0:
+                    # TODO: Game over
+                    pass
+
 
     def get_player(self):
         return self.find_withtag("player")
