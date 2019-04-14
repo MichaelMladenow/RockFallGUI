@@ -98,17 +98,23 @@ class Rock(FallingObject):
     """
     FallingObject that damages the player upon collision
     """
+
     def __init__(self, canvas):
         super().__init__(canvas, Settings.rock_width, Settings.rock_height, Settings.rock_tag, Settings.rock_color, Settings.rock_fall_velocity)
 
     def on_collision(self, player):
+        """
+        Damages player upon collision
+        """
         player.loose_life()
 
         # Fall back to parent for destruction handling
         super().on_collision() 
 
 class Player(object):
-
+    """
+    Handles player movement, rendering and stores player info(lives/score)
+    """
     def __init__(self, canvas, width = 50, height = 50, lives = 3, velocity = 50, color = "red"):
         self.canvas   = canvas
         self.lives    = lives
@@ -123,7 +129,7 @@ class Player(object):
 
     def generate_x(self):
         """
-            Generates x position for the player to be drawn on
+        Generates x position for the player to be drawn on
         """
         canvas_width = int(self.canvas["width"])
         positions = range(1, canvas_width + 1, self.width)
@@ -160,18 +166,30 @@ class Player(object):
             return self.obj_id
 
     def add_life(self):
+        """
+        Increments the player's lives
+        """
         self.lives += 1
 
     def loose_life(self):
+        """
+        Decrements the player's lives
+        """
         self.lives -= 1
 
     def move_left(self):
+        """
+        Moves the player left by their velocity
+        """
         velocity = -self.velocity
         x1, y1, x2, y2 = self.canvas.bbox(self.get_id())
         if x1 >= 1:
             self.canvas.move(self.get_id(), velocity, 0)
 
     def move_right(self):
+        """
+        Moves the player right by their velocity
+        """
         velocity = self.velocity
         x1, y1, x2, y2 = self.canvas.bbox(self.get_id())
         if x2 < int(self.canvas["width"]):
