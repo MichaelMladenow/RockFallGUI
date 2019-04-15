@@ -1,7 +1,7 @@
 import random
 from tkinter import *
 from settings import Settings
-from models import Rock, Player
+from models import Rock, Player, Bonus
 
 
 class Board(Canvas):
@@ -12,9 +12,10 @@ class Board(Canvas):
             background=Settings.window_bg_color,
             highlightthickness=0)
 
+        self.master.geometry('{}x{}'.format(Settings.window_width, Settings.window_height))
         self.game_objects = []
         self.score        = 0
-        # self.lives        = Settings.player_lives
+        self.inGame       = True
         self.pack()
         self.create_player()
 
@@ -35,7 +36,8 @@ class Board(Canvas):
         """
         rock = Rock(self)
         self.game_objects.append(rock)
-        self.after(Settings.rock_spawn_interval, self.rock_spawn_cycle)
+        if self.inGame:
+            self.after(Settings.rock_spawn_interval, self.rock_spawn_cycle)
 
     def update_cycle(self):
         """
@@ -47,7 +49,8 @@ class Board(Canvas):
             obj.on_update()
 
         self.update_info()
-        self.after(Settings.game_delay, self.update_cycle)
+        if self.inGame:
+            self.after(Settings.game_delay, self.update_cycle)
 
     def create_player(self):
         self.player = Player(self)
@@ -84,8 +87,7 @@ class Board(Canvas):
             if obj:
                 obj.on_collision(self.player)
             if self.player.lives <= 0:
-                # TODO: Game over
-                pass
+                self.game_over()
 
     def get_player(self):
         return self.find_withtag("player")
@@ -106,6 +108,13 @@ class Board(Canvas):
                 return obj
         return None
 
+    def game_over(self):
+        self.inGame = False
+        self.create_rectangle(0, Settings.window_height / 2 - 10,
+                              Settings.window_width, Settings.window_height / 2 + 10,
+                              fill='red')
+        self.create_text(Settings.window_width / 2, Settings.window_height / 2, text='GAME OVER', fill='white')
+
 
 class Game(Frame):
 
@@ -113,6 +122,7 @@ class Game(Frame):
         super().__init__()
                 
         self.master.title(Settings.window_title)
+        self.master.resizable(False, False)
         self.board = Board()
         self.pack()
 
