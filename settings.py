@@ -6,6 +6,7 @@ class Settings:
 
     player_tag           = "player"
     player_color         = "red"
+    player_ghost_color   = 'blue'
     player_height        = 50
     player_width         = 50
     player_velocity      = 50
@@ -17,5 +18,12 @@ class Settings:
     rock_width           = 50
     rock_fall_velocity   = 15
     rock_spawn_interval  = 500
+
+    bonus_color          = "green"
+    bonus_tag            = "bonus"
+    bonus_height         = 50
+    bonus_width          = 50
+    bonus_fall_velocity  = 15
+    bonus_spawn_interval = 500
 
     game_delay           = 20
