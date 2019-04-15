@@ -118,6 +118,7 @@ class Player(object):
     def __init__(self, canvas, width = 50, height = 50, lives = 3, velocity = 50, color = "red"):
         self.canvas   = canvas
         self.lives    = lives
+        self.score    = 0
         self.color    = color
         self.velocity = velocity
         self.height   = height
@@ -176,6 +177,12 @@ class Player(object):
         Decrements the player's lives
         """
         self.lives -= 1
+
+    def add_score(self, score):
+        self.score += score
+
+    def loose_score(self, score):
+        self.score -= score
 
     def move_left(self):
         """

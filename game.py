@@ -30,12 +30,17 @@ class Board(Canvas):
         self.update_cycle()
 
     def rock_spawn_cycle(self):
+        """
+        Action on each rock spawn cycle
+        """
         rock = Rock(self)
         self.game_objects.append(rock)
         self.after(Settings.rock_spawn_interval, self.rock_spawn_cycle)
 
     def update_cycle(self):
-
+        """
+        Action of each game update cycle
+        """
         self.check_for_collisions()
 
         for obj in self.game_objects:
@@ -59,6 +64,9 @@ class Board(Canvas):
             self.player.move_right()
 
     def update_info(self):
+        """
+        Updates the info text (score/lives)
+        """
         lives = self.find_withtag("lives")
         score = self.find_withtag("score")
         self.itemconfigure(lives, text="Lives: {0}".format(self.player.lives))
@@ -66,7 +74,7 @@ class Board(Canvas):
 
     def check_for_collisions(self):
         """
-            Check for collisions and pass them to the player object
+        Check for collisions and pass them to the player object
         """
         x1, y1, x2, y2 = self.coords(self.get_player())
         overlap        = self.find_overlapping(x1, y1, x2, y2)
@@ -104,7 +112,7 @@ class Game(Frame):
     def __init__(self):
         super().__init__()
                 
-        self.master.title('Game')
+        self.master.title(Settings.window_title)
         self.board = Board()
         self.pack()
 
