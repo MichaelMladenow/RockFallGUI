@@ -89,7 +89,7 @@ class Board(Canvas):
 
             if obj:
                 obj.on_collision(player_obj)
-                
+
             if player_obj.lives <= 0:
                 self.game_over()
 
@@ -118,9 +118,10 @@ class Board(Canvas):
     def game_over(self):
         self.inGame = False
         self.create_rectangle(0, Settings.window_height / 2 - 10,
-                              Settings.window_width, Settings.window_height / 2 + 10,
+                              Settings.window_width, Settings.window_height / 2 + 30,
                               fill='red')
         self.create_text(Settings.window_width / 2, Settings.window_height / 2, text='GAME OVER', fill='white')
+        self.create_text(Settings.window_width / 2, Settings.window_height / 2 + 20, text='Score: %s' % self.get_player_obj().score, fill='white')
 
 
 class Game(Frame):
