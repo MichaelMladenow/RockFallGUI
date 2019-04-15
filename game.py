@@ -14,7 +14,7 @@ class Board(Canvas):
 
         self.game_objects = []
         self.score        = 0
-        self.lives        = Settings.player_lives
+        # self.lives        = Settings.player_lives
         self.pack()
         self.create_player()
 
