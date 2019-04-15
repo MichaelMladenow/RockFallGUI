@@ -43,12 +43,19 @@ class GameObject(object):
         Effects upon collision with the player
         """
         self.delete()
-        
+
+    def on_deletion(self):
+        """
+        Effects upon destruction
+        """
+        pass
+
     def delete(self):
         """
         Removes the object from the canvas
         """
         self.canvas.remove_obj(self.get_id())
+        self.on_deletion()
 
     def get_id(self):
         """
@@ -61,6 +68,9 @@ class GameObject(object):
         else:
             return self.obj_id
 
+    def get_player(self):
+        return self.canvas.get_player_obj()
+
 class FallingObject(GameObject):
     """
     GameObject with a "fall" functionality
@@ -71,6 +81,7 @@ class FallingObject(GameObject):
     def __init__(self, canvas, width, height, tag, color, fall_velocity):
         self.y             = 0
         self.x             = get_rnd_step(width, int(canvas["width"]))
+        self.collided      = False
         self.fall_velocity = fall_velocity
 
         super().__init__(canvas, width, height, self.x, self.y, tag, color)
@@ -107,29 +118,48 @@ class Rock(FallingObject):
         """
         Damages player upon collision
         """
-        if player.vulnerable:
-            player.loose_life()
-            player.get_invulnerability(5000)
+        self.collided = True
+        player.loose_life()
 
         # Fall back to parent for destruction handling
-        super().on_collision() 
+        super().on_collision()
+
+    def on_deletion(self):
+        """
+        Action upon object deletion
+        """
+        if not self.collided:
+            self.get_player().add_score(Settings.rock_miss_score)
+
+        super().on_deletion()
+
+class Bonus(FallingObject):
+
+    def __init__(self, canvas):
+        super().__init__(canvas, Settings.bonus_width, Settings.bonus_height, Settings.bonus_tag,
+                         Settings.bonus_color, Settings.bonus_fall_velocity)
+
+    def on_collision(self, player):
+        super().on_collision()
+
 
 class Player(object):
     """
     Handles player movement, rendering and stores player info(lives/score)
     """
+
     def __init__(self, canvas, width=Settings.player_width, height=Settings.player_height,
                  lives=Settings.player_lives, velocity=Settings.player_velocity, color=Settings.player_color):
-        self.canvas   = canvas
-        self.lives    = lives
-        self.score    = 0
-        self.color    = color
-        self.velocity = velocity
-        self.height   = height
-        self.width    = width
-        self.tag      = "player"
-        self.x        = self.generate_x()
-        self.y        = self.generate_y()
+        self.canvas     = canvas
+        self.lives      = lives
+        self.score      = 0
+        self.color      = color
+        self.velocity   = velocity
+        self.height     = height
+        self.width      = width
+        self.tag        = "player"
+        self.x          = self.generate_x()
+        self.y          = self.generate_y()
         self.vulnerable = True
         self.draw()
 
@@ -181,14 +211,19 @@ class Player(object):
         """
         Decrements the player's lives
         """
-        self.lives -= 1
+        if self.vulnerable:
+            self.lives -= 1
+            self.make_invulnerable(Settings.player_ghost_dur)
 
-    def get_invulnerability(self, timer):
+    def make_invulnerable(self, timer):
+        """
+        Make player invulnerable for @timer ms
+        """
         self.vulnerable = False
         self.canvas.itemconfigure(self.obj_id, fill=Settings.player_ghost_color)
-        self.canvas.after(timer, self.get_vulnerability)
+        self.canvas.after(timer, self.make_vulnerable)
 
-    def get_vulnerability(self):
+    def make_vulnerable(self):
         self.vulnerable = True
         self.canvas.itemconfigure(self.obj_id, fill=Settings.player_color)
 
@@ -216,13 +251,3 @@ class Player(object):
         if x2 < int(self.canvas["width"]):
             self.canvas.move(self.get_id(), velocity, 0)
 
-
-class Bonus(FallingObject):
-
-    def __init__(self, canvas):
-        super().__init__(canvas, Settings.bonus_width, Settings.bonus_height, Settings.bonus_tag,
-                         Settings.bonus_color, Settings.bonus_fall_velocity)
-
-    def on_collision(self, player):
-        player.get_invulnerability(5000)
-        super().on_collision()

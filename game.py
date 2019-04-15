@@ -7,9 +7,10 @@ from models import Rock, Player, Bonus
 class Board(Canvas):
 
     def __init__(self):
-        super().__init__(width=Settings.window_width,
-            height=Settings.window_height,
-            background=Settings.window_bg_color,
+        super().__init__(
+            width             = Settings.window_width,
+            height            = Settings.window_height,
+            background        = Settings.window_bg_color,
             highlightthickness=0)
 
         self.master.geometry('{}x{}'.format(Settings.window_width, Settings.window_height))
@@ -62,9 +63,9 @@ class Board(Canvas):
         key = e.keysym
 
         if key == "Left":
-            self.player.move_left()
+            self.get_player_obj().move_left()
         if key == "Right":
-            self.player.move_right()
+            self.get_player_obj().move_right()
 
     def update_info(self):
         """
@@ -72,8 +73,8 @@ class Board(Canvas):
         """
         lives = self.find_withtag("lives")
         score = self.find_withtag("score")
-        self.itemconfigure(lives, text="Lives: {0}".format(self.player.lives))
-        self.itemconfigure(score, text="Score: {0}".format(self.score))
+        self.itemconfigure(lives, text="Lives: {0}".format(self.get_player_obj().lives))
+        self.itemconfigure(score, text="Score: {0}".format(self.get_player_obj().score))
 
     def check_for_collisions(self):
         """
@@ -83,10 +84,13 @@ class Board(Canvas):
         overlap        = self.find_overlapping(x1, y1, x2, y2)
 
         for ovr in overlap:
-            obj = self.get_game_obj(ovr)
+            obj        = self.get_game_obj(ovr)
+            player_obj = self.get_player_obj()
+
             if obj:
-                obj.on_collision(self.player)
-            if self.player.lives <= 0:
+                obj.on_collision(player_obj)
+                
+            if player_obj.lives <= 0:
                 self.game_over()
 
     def get_player(self):
@@ -107,6 +111,9 @@ class Board(Canvas):
             if obj.get_id() == obj_id:
                 return obj
         return None
+
+    def get_player_obj(self):
+        return self.player
 
     def game_over(self):
         self.inGame = False
