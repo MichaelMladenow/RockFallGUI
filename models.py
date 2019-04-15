@@ -2,6 +2,7 @@
 import random
 from settings import Settings
 from util import get_rnd_step
+from time import sleep
 
 class GameObject(object):
     """
@@ -106,7 +107,9 @@ class Rock(FallingObject):
         """
         Damages player upon collision
         """
-        player.loose_life()
+        if player.vulnerable:
+            player.loose_life()
+            player.get_invulnerability(5000)
 
         # Fall back to parent for destruction handling
         super().on_collision() 
@@ -115,7 +118,8 @@ class Player(object):
     """
     Handles player movement, rendering and stores player info(lives/score)
     """
-    def __init__(self, canvas, width = 50, height = 50, lives = 3, velocity = 50, color = "red"):
+    def __init__(self, canvas, width=Settings.player_width, height=Settings.player_height,
+                 lives=Settings.player_lives, velocity=Settings.player_velocity, color=Settings.player_color):
         self.canvas   = canvas
         self.lives    = lives
         self.score    = 0
@@ -126,6 +130,7 @@ class Player(object):
         self.tag      = "player"
         self.x        = self.generate_x()
         self.y        = self.generate_y()
+        self.vulnerable = True
         self.draw()
 
     def generate_x(self):
@@ -178,6 +183,15 @@ class Player(object):
         """
         self.lives -= 1
 
+    def get_invulnerability(self, timer):
+        self.vulnerable = False
+        self.canvas.itemconfigure(self.obj_id, fill=Settings.player_ghost_color)
+        self.canvas.after(timer, self.get_vulnerability)
+
+    def get_vulnerability(self):
+        self.vulnerable = True
+        self.canvas.itemconfigure(self.obj_id, fill=Settings.player_color)
+
     def add_score(self, score):
         self.score += score
 
@@ -201,3 +215,14 @@ class Player(object):
         x1, y1, x2, y2 = self.canvas.bbox(self.get_id())
         if x2 < int(self.canvas["width"]):
             self.canvas.move(self.get_id(), velocity, 0)
+
+
+class Bonus(FallingObject):
+
+    def __init__(self, canvas):
+        super().__init__(canvas, Settings.bonus_width, Settings.bonus_height, Settings.bonus_tag,
+                         Settings.bonus_color, Settings.bonus_fall_velocity)
+
+    def on_collision(self, player):
+        player.get_invulnerability(5000)
+        super().on_collision()
