@@ -1,22 +1,25 @@
 import random
 from tkinter import *
 from settings import Settings
-from models import Rock, Player, Bonus
+from models import Rock, Player, InsanityBonus
 
 
 class Board(Canvas):
 
     def __init__(self):
         super().__init__(
-            width             = Settings.window_width,
-            height            = Settings.window_height,
-            background        = Settings.window_bg_color,
-            highlightthickness=0)
+            width              = Settings.window_width,
+            height             = Settings.window_height,
+            background         = Settings.window_bg_color,
+            highlightthickness = 0)
 
         self.master.geometry('{}x{}'.format(Settings.window_width, Settings.window_height))
-        self.game_objects = []
-        self.score        = 0
-        self.inGame       = True
+        self.available_bonuses    = [InsanityBonus, ]
+        self.rock_spawn_interval  = Settings.rock_spawn_interval
+        self.bonus_spawn_rate_min = Settings.bonus_spawn_rate_min
+        self.bonus_spawn_rate_max = Settings.bonus_spawn_rate_max
+        self.game_objects         = []
+        self.inGame               = True
         self.pack()
         self.create_player()
 
@@ -29,6 +32,7 @@ class Board(Canvas):
 
         # Periodical actions
         self.rock_spawn_cycle()
+        self.bonus_spawn_cycle()
         self.update_cycle()
 
     def rock_spawn_cycle(self):
@@ -38,7 +42,18 @@ class Board(Canvas):
         rock = Rock(self)
         self.game_objects.append(rock)
         if self.inGame:
-            self.after(Settings.rock_spawn_interval, self.rock_spawn_cycle)
+            self.after(self.rock_spawn_interval, self.rock_spawn_cycle)
+
+    def bonus_spawn_cycle(self):
+        """
+        Action on each rock spawn cycle
+        """
+        new_bonus_time = random.choice(range(self.bonus_spawn_rate_min, self.bonus_spawn_rate_max + 1))
+        new_bonus      = random.choice(self.available_bonuses)(self)
+        self.game_objects.append(new_bonus)
+
+        if self.inGame:
+            self.after(new_bonus_time, self.bonus_spawn_cycle)
 
     def update_cycle(self):
         """
@@ -50,6 +65,7 @@ class Board(Canvas):
             obj.on_update()
 
         self.update_info()
+
         if self.inGame:
             self.after(Settings.game_delay, self.update_cycle)
 

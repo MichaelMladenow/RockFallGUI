@@ -112,7 +112,8 @@ class Rock(FallingObject):
     """
 
     def __init__(self, canvas):
-        super().__init__(canvas, Settings.rock_width, Settings.rock_height, Settings.rock_tag, Settings.rock_color, Settings.rock_fall_velocity)
+        super().__init__(canvas, Settings.rock_width, Settings.rock_height, Settings.rock_tag,
+                        Settings.rock_color, Settings.rock_fall_velocity)
 
     def on_collision(self, player):
         """
@@ -133,34 +134,60 @@ class Rock(FallingObject):
 
         super().on_deletion()
 
-class Bonus(FallingObject):
-
+class InsanityBonus(FallingObject):
+    """
+    Bonus - Increases score generation but also increases game speed and rock spawn rate
+    """
     def __init__(self, canvas):
         super().__init__(canvas, Settings.bonus_width, Settings.bonus_height, Settings.bonus_tag,
-                         Settings.bonus_color, Settings.bonus_fall_velocity)
+                        Settings.bonus_color, Settings.bonus_fall_velocity)
 
     def on_collision(self, player):
+        self.orig_score_multiplier  = player.score_multiplier
+        self.orig_rock_spawn_rate   = self.canvas.rock_spawn_interval
+        self.orig_game_speed        = Settings.game_delay
+        self.bonus_duration         = Settings.bonus_insanity_duration
+        self.player                 = player
+
+        bonus_score_multiplier      = Settings.bonus_insanity_score_mult
+        bonus_rock_spawn_rate       = Settings.bonus_insanity_spawn_rate
+        bonus_game_speed            = Settings.bonus_insanity_game_delay
+        
+        self._set_bonus_game_props(player, bonus_score_multiplier, bonus_rock_spawn_rate, bonus_game_speed)
+        self.canvas.after(self.bonus_duration, self._return_orig_game_props)
+
         super().on_collision()
+
+    def _set_bonus_game_props(self, player, score_multiplier, rock_spawn_rate, game_speed):
+        player.score_multiplier         = score_multiplier
+        self.canvas.rock_spawn_interval = rock_spawn_rate
+        Settings.game_delay             = game_speed
+
+    def _return_orig_game_props(self):
+        self.player.score_multiplier    = self.orig_score_multiplier
+        self.canvas.rock_spawn_interval = self.orig_rock_spawn_rate
+        Settings.game_delay             = self.orig_game_speed
 
 
 class Player(object):
     """
-    Handles player movement, rendering and stores player info(lives/score)
+    Handles player movement, actions, rendering and stores player info(lives/score)
     """
 
     def __init__(self, canvas, width=Settings.player_width, height=Settings.player_height,
                  lives=Settings.player_lives, velocity=Settings.player_velocity, color=Settings.player_color):
-        self.canvas     = canvas
-        self.lives      = lives
-        self.score      = 0
-        self.color      = color
-        self.velocity   = velocity
-        self.height     = height
-        self.width      = width
-        self.tag        = "player"
-        self.x          = self.generate_x()
-        self.y          = self.generate_y()
-        self.vulnerable = True
+        self.canvas           = canvas
+        self.lives            = lives
+        self.score            = 0
+        self.color            = color
+        self.velocity         = velocity
+        self.height           = height
+        self.width            = width
+        self.tag              = "player"
+        self.score_multiplier = Settings.game_score_multiplier
+        self.x                = self.generate_x()
+        self.y                = self.generate_y()
+        self.vulnerable       = True
         self.draw()
 
     def generate_x(self):
@@ -228,7 +255,7 @@ class Player(object):
         self.canvas.itemconfigure(self.obj_id, fill=Settings.player_color)
 
     def add_score(self, score):
-        self.score += score
+        self.score += (score * self.score_multiplier)
 
     def loose_score(self, score):
         self.score -= score
