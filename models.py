@@ -169,6 +169,35 @@ class InsanityBonus(FallingObject):
         Settings.game_delay             = self.orig_game_speed
 
 
+class GhostBonus(FallingObject):
+    """
+    Bonus - Makes the player invisible but also increases score generation
+    """
+    def __init__(self, canvas):
+        super().__init__(canvas, Settings.bonus_width, Settings.bonus_height, Settings.bonus_tag,
+                        Settings.bonus_color, Settings.bonus_fall_velocity)
+
+    def on_collision(self, player):
+        bonus_score_multiplier     = Settings.bonus_ghost_score_mult    
+        bonus_duration             = Settings.bonus_ghost_duration
+        bg_color                   = Settings.window_bg_color
+        player_rendered            = self.canvas.get_player()
+        self.player                = player
+        self.orig_player_color     = Settings.player_color
+        self.orig_score_multiplier = player.score_multiplier
+
+        self.canvas.itemconfig(player_rendered, fill=bg_color)
+        player.score_multiplier    = bonus_score_multiplier
+
+        self.canvas.after(bonus_duration, self._return_orig_player_props)
+
+        super().on_collision()
+
+    def _return_orig_player_props(self):
+        self.player.score_multiplier = self.orig_score_multiplier
+        player_rendered              = self.canvas.get_player()
+        self.canvas.itemconfig(player_rendered, fill=self.orig_player_color)
+
 class Player(object):
     """
     Handles player movement, actions, rendering and stores player info(lives/score)

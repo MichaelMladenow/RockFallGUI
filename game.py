@@ -1,7 +1,7 @@
 import random
 from tkinter import *
 from settings import Settings
-from models import Rock, Player, InsanityBonus
+from models import Rock, Player, InsanityBonus, GhostBonus
 
 
 class Board(Canvas):
@@ -14,7 +14,7 @@ class Board(Canvas):
             highlightthickness = 0)
 
         self.master.geometry('{}x{}'.format(Settings.window_width, Settings.window_height))
-        self.available_bonuses    = [InsanityBonus, ]
+        self.available_bonuses    = [InsanityBonus, GhostBonus]   ## -- Defined Bonuses -- ##
         self.rock_spawn_interval  = Settings.rock_spawn_interval
         self.bonus_spawn_rate_min = Settings.bonus_spawn_rate_min
         self.bonus_spawn_rate_max = Settings.bonus_spawn_rate_max

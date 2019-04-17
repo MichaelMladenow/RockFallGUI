@@ -33,11 +33,15 @@ class Settings:
     bonus_spawn_rate_min      = 5000
     bonus_spawn_rate_max      = 10000
 
-    """ Speed Bonus Settings """
+    """ Insanity Bonus Settings """
     bonus_insanity_game_delay = 10
     bonus_insanity_spawn_rate = 250
     bonus_insanity_score_mult = 10
     bonus_insanity_duration   = 4000
+
+    """ Ghost Bonus Settings """
+    bonus_ghost_score_mult    = 5
+    bonus_ghost_duration      = 4000
 
     """ Game Settings """
     game_delay                = 20
